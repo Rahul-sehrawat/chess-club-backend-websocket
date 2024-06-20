@@ -1,6 +1,4 @@
 "use strict";
-// import { WebSocketServer } from 'ws';
-// import { GameManager } from './GameManger';
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -25,16 +23,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// const wss = new WebSocketServer({ port: 8080 });
-// const gameManger = new GameManager();
-// wss.on('connection', function connection(ws) {
-//   gameManger.addUser(ws)
-//   console.log("user added ")
-//   console.log("player active",gameManger.users.length);
-//   ws.on("disconnect",()=> {gameManger.removeUser(ws)
-//   })
-// });
-// console.log('WebSocket server is running on ws://localhost:8080');
 const ws_1 = require("ws");
 // import { GameManager } from './GameManager';
 const GameManger_1 = require("./GameManger");
