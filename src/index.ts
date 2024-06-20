@@ -1,20 +1,25 @@
 import { WebSocketServer } from 'ws';
+// import { GameManager } from './GameManager';
 import { GameManager } from './GameManger';
+import * as dotenv from 'dotenv';
 
-const wss = new WebSocketServer({ port: 8080 });
+// Load environment variables from .env file
+dotenv.config();
 
+// Get the port number from environment variables
+const port = process.env.PORT || 8080;
 
-const gameManger = new GameManager();
+const wss = new WebSocketServer({ port: Number(port) });
 
+const gameManager = new GameManager();
 
 wss.on('connection', function connection(ws) {
-  gameManger.addUser(ws)
-  console.log("user added ")
-  console.log("player active",gameManger.users.length);
-  ws.on("disconnect",()=> {gameManger.removeUser(ws)
-  })
-
+  gameManager.addUser(ws);
+  console.log("user added ");
+  console.log("player active", gameManager.users.length);
+  ws.on("disconnect", () => {
+    gameManager.removeUser(ws);
+  });
 });
 
-console.log('WebSocket server is running on ws://localhost:8080');
-
+console.log(`WebSocket server is running on ws://localhost:${port}`);
