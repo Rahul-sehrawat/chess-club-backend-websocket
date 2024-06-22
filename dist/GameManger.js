@@ -15,16 +15,26 @@ class GameManager {
         this.addHandler(socket);
         console.log("User added. Total users:", this.users.length);
     }
-    removeUser(socket) {
+    removeUser(socket, errorOccurred = false) {
+        // Remove the user from the users array
         this.users = this.users.filter(user => user !== socket);
+        // Find the game the user was part of
         this.games = this.games.filter(game => {
             if (game.player1 === socket || game.player2 === socket) {
-                if (game.player1 === socket && game.player2.readyState === ws_1.WebSocket.OPEN) {
-                    game.player2.send(JSON.stringify({ type: 'GAME_OVER', reason: 'Opponent disconnected' }));
+                const opponent = game.player1 === socket ? game.player2 : game.player1;
+                // If an error occurred, declare the opponent as the winner
+                if (errorOccurred && opponent.readyState === ws_1.WebSocket.OPEN) {
+                    opponent.send(JSON.stringify({ type: messages_1.GAME_OVER, payload: { winner: 'Opponent disconnected' } }));
                 }
-                if (game.player2 === socket && game.player1.readyState === ws_1.WebSocket.OPEN) {
-                    game.player1.send(JSON.stringify({ type: 'GAME_OVER', reason: 'Opponent disconnected' }));
+                // Close both players' WebSocket connections
+                if (socket.readyState === ws_1.WebSocket.OPEN || socket.readyState === ws_1.WebSocket.CONNECTING) {
+                    socket.close();
                 }
+                if (opponent.readyState === ws_1.WebSocket.OPEN || opponent.readyState === ws_1.WebSocket.CONNECTING) {
+                    opponent.close();
+                }
+                // Remove the opponent from the users array
+                this.users = this.users.filter(user => user !== opponent);
                 return false; // Remove the game from the list
             }
             return true; // Keep the game in the list
@@ -75,6 +85,10 @@ class GameManager {
         });
         socket.on('close', () => {
             this.removeUser(socket);
+        });
+        socket.on('error', (error) => {
+            console.log("WebSocket error:", error);
+            this.removeUser(socket, true);
         });
     }
 }
