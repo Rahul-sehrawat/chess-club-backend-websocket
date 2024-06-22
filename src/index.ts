@@ -52,6 +52,14 @@ wss.on('connection', function connection(ws) {
     console.log("user removed");
     console.log("players remaining", gameManager.users.length);
   });
+   
+  ws.on('error', (error) => {
+    console.log("WebSocket error:", error);
+    gameManager.removeUser(ws);
+    console.log("User removed due to error. Total users:", gameManager.users.length);
+  });
+
+
 });
 
 console.log(`WebSocket server is running on ws://localhost:${port}`);

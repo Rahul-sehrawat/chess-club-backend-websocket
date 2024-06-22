@@ -1,5 +1,5 @@
 import { WebSocket } from "ws";
-import { INIT_GAME, MOVE, MOVES_HISTORY } from "./messages";
+import { INIT_GAME, MOVE, MOVES_HISTORY, GAME_OVER } from "./messages";
 import { Game } from "./Game";
 
 export class GameManager {
@@ -19,20 +19,36 @@ export class GameManager {
         console.log("User added. Total users:", this.users.length);
     }
 
-    removeUser(socket: WebSocket) {
+    removeUser(socket: WebSocket, errorOccurred = false) {
+        // Remove the user from the users array
         this.users = this.users.filter(user => user !== socket);
+
+        // Find the game the user was part of
         this.games = this.games.filter(game => {
             if (game.player1 === socket || game.player2 === socket) {
-                if (game.player1 === socket && game.player2.readyState === WebSocket.OPEN) {
-                    game.player2.send(JSON.stringify({ type: 'GAME_OVER', reason: 'Opponent disconnected' }));
+                const opponent = game.player1 === socket ? game.player2 : game.player1;
+
+                // If an error occurred, declare the opponent as the winner
+                if (errorOccurred && opponent.readyState === WebSocket.OPEN) {
+                    opponent.send(JSON.stringify({ type: GAME_OVER, payload: { winner: 'Opponent disconnected' } }));
                 }
-                if (game.player2 === socket && game.player1.readyState === WebSocket.OPEN) {
-                    game.player1.send(JSON.stringify({ type: 'GAME_OVER', reason: 'Opponent disconnected' }));
+
+                // Close both players' WebSocket connections
+                if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+                    socket.close();
                 }
+                if (opponent.readyState === WebSocket.OPEN || opponent.readyState === WebSocket.CONNECTING) {
+                    opponent.close();
+                }
+
+                // Remove the opponent from the users array
+                this.users = this.users.filter(user => user !== opponent);
+
                 return false; // Remove the game from the list
             }
             return true; // Keep the game in the list
         });
+
         console.log("User removed. Total users:", this.users.length);
     }
 
@@ -81,6 +97,11 @@ export class GameManager {
 
         socket.on('close', () => {
             this.removeUser(socket);
+        });
+
+        socket.on('error', (error) => {
+            console.log("WebSocket error:", error);
+            this.removeUser(socket, true);
         });
     }
 }
