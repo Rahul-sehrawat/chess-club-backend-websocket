@@ -1,4 +1,8 @@
 "use strict";
+// import { WebSocketServer } from 'ws';
+// // import { GameManager } from './GameManager';
+// import { GameManager } from './GameManger';
+// import * as dotenv from 'dotenv';
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -23,8 +27,24 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// // Load environment variables from .env file
+// dotenv.config();
+// // Get the port number from environment variables
+// const port = process.env.PORT || 8080;
+// const wss = new WebSocketServer({ port: Number(port) });
+// const gameManager = new GameManager();
+// wss.on('connection', function connection(ws) {
+//   gameManager.addUser(ws);
+//   console.log("user added ");
+//   console.log("player active", gameManager.users.length);
+//   ws.on("disconnect", () => {
+//     gameManager.removeUser(ws);
+//     console.log("user removed")
+//     console.log("player remain", gameManager.users.length);
+//   });
+// });
+// console.log(`WebSocket server is running on ws://localhost:${port}`);
 const ws_1 = require("ws");
-// import { GameManager } from './GameManager';
 const GameManger_1 = require("./GameManger");
 const dotenv = __importStar(require("dotenv"));
 // Load environment variables from .env file
@@ -36,9 +56,11 @@ const gameManager = new GameManger_1.GameManager();
 wss.on('connection', function connection(ws) {
     gameManager.addUser(ws);
     console.log("user added ");
-    console.log("player active", gameManager.users.length);
-    ws.on("disconnect", () => {
+    console.log("players active", gameManager.users.length);
+    ws.on("close", () => {
         gameManager.removeUser(ws);
+        console.log("user removed");
+        console.log("players remaining", gameManager.users.length);
     });
 });
 console.log(`WebSocket server is running on ws://localhost:${port}`);
