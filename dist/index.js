@@ -57,6 +57,10 @@ wss.on('connection', function connection(ws) {
     gameManager.addUser(ws);
     console.log("user added ");
     console.log("players active", gameManager.users.length);
+    ws.on('message', (message) => {
+        console.log('received:', message);
+        ws.send(JSON.stringify({ type: 'PLAYERS_ACTIVE', message: gameManager.users.length }));
+    });
     ws.on("close", () => {
         gameManager.removeUser(ws);
         console.log("user removed");
